@@ -1,0 +1,13 @@
+# clangd
+compile_commands.json
+.cache
+
+# xmake
+build
+.xmake
+
+# vscode
+.vscode/*
+!.vscode/launch.json
+!.vscode/tasks.json
+
