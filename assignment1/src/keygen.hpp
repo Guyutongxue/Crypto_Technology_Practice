@@ -31,7 +31,7 @@ inline KeyType readKey(const std::filesystem::path& path, SM2_KEY& sm2key) {
     std::ifstream ifs(path, std::ios::binary);
     if (!ifs) {
         throw std::runtime_error(
-            std::format("cannot open file {}", path.c_str()));
+            std::format("cannot open file {}", path.string()));
     }
     std::vector<std::string> lines;
     while (ifs) {
@@ -43,33 +43,33 @@ inline KeyType readKey(const std::filesystem::path& path, SM2_KEY& sm2key) {
     }
     if (lines.size() != 3) {
         throw std::runtime_error(std::format(
-            "invalid key file {} (too many or less lines)", path.c_str()));
+            "invalid key file {} (too many or less lines)", path.string()));
     }
     if (!(lines[0].starts_with("----- BEGIN ") &&
           lines[0].ends_with(" KEY -----") &&
           lines[2].starts_with("----- END ") &&
           lines[2].ends_with(" KEY -----"))) {
         throw std::runtime_error(
-            std::format("invalid key file {} (bad format)", path.c_str()));
+            std::format("invalid key file {} (bad format)", path.string()));
     }
     auto type = std::string_view(lines[0]).substr(12, lines[0].size() - 22);
     auto key = base64Decode(lines[1]);
     if (type == "PUBLIC") {
         if (key.size() != sizeof(sm2key.public_key)) {
-            throw std::runtime_error(
-                std::format("invalid key file {} (pubkey size)", path.c_str()));
+            throw std::runtime_error(std::format(
+                "invalid key file {} (pubkey size)", path.string()));
         }
         svToPod(key, sm2key.public_key);
         return KeyType::Public;
     } else if (type == "PRIVATE") {
         if (key.size() != sizeof(sm2key.private_key)) {
             throw std::runtime_error(std::format(
-                "invalid key file {} (privkey size)", path.c_str()));
+                "invalid key file {} (privkey size)", path.string()));
         }
         svToPod(key, sm2key.private_key);
         return KeyType::Private;
     } else {
         throw std::runtime_error(std::format(
-            "invalid key file {} (unknown key type)", path.c_str()));
+            "invalid key file {} (unknown key type)", path.string()));
     }
 }

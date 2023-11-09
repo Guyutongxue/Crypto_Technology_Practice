@@ -16,8 +16,8 @@ static_assert(CHAR_BIT == 8);
 inline std::string base64Encode(std::string_view input) {
     std::string output;
     output.reserve((input.size() + 2) / 3 * 4);
-    for (auto i = 0uz; i < input.size(); i += 3) {
-        auto n = 0uz;
+    for (std::size_t i{0}; i < input.size(); i += 3) {
+        std::size_t n{0};
 #define UNSIGNED_EXPAND(x) \
     (static_cast<std::size_t>(static_cast<unsigned char>(x)))
         n |= UNSIGNED_EXPAND(input[i]) << 16;
@@ -47,8 +47,8 @@ inline std::string base64Encode(std::string_view input) {
 inline std::string base64Decode(std::string_view input) {
     std::string output;
     output.reserve(input.size() / 4 * 3);
-    for (auto i = 0uz; i < input.size(); i += 4) {
-        auto n = 0uz;
+    for (std::size_t i{0}; i < input.size(); i += 4) {
+        std::size_t n{0};
         n |= base64Table.find(input[i]) << 18;
         n |= base64Table.find(input[i + 1]) << 12;
         if (input[i + 2] != '=') {

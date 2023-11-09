@@ -6,7 +6,9 @@
 
 template <std::integral IntT, std::uniform_random_bit_generator GenT>
 inline IntT randomInt(GenT& generator) {
-    static std::uniform_int_distribution<IntT> d;
+    // [rand.req.genl] prohibit generating random char
+    using TargetIntT = std::conditional_t<sizeof(IntT) < sizeof(short), short, IntT>;
+    static std::uniform_int_distribution<TargetIntT> d;
     return d(generator);
 }
 

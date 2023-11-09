@@ -123,14 +123,13 @@ inline void decrypt(EncryptOption opt) {
 
     auto inplace = std::filesystem::equivalent(opt.output, opt.input);
     if (!inplace && std::filesystem::exists(opt.output) && !opt.force) {
-        throw std::runtime_error(
-            std::format("file {} already exists; use --force to overwrite",
-                        opt.output.c_str()));
+        throw std::runtime_error(std::format(
+            "file {} already exists; use --force to overwrite", opt.output));
     }
 
     if (!std::filesystem::is_directory(opt.input)) {
         throw std::runtime_error(
-            std::format("input {} is not a directory", opt.input.c_str()));
+            std::format("input {} is not a directory", opt.input));
     }
     // read symmetric key, decrypt it with SM2
     auto keyPath = std::move(opt.keyPath)
@@ -200,7 +199,7 @@ inline void decrypt(EncryptOption opt) {
                 if (!std::ranges::equal(encryptedDigest, efh.digest)) {
                     throw std::runtime_error(
                         std::format("file {} is corrupted (digest verify fail)",
-                                    dest.c_str()));
+                                    dest.string()));
                 }
             }
             writeFile(dest, plain, doForceWrite);
@@ -223,14 +222,13 @@ inline void encrypt(EncryptOption opt) {
 
     auto inplace = std::filesystem::equivalent(opt.output, opt.input);
     if (!inplace && std::filesystem::exists(opt.output) && !opt.force) {
-        throw std::runtime_error(
-            std::format("file {} already exists; use --force to overwrite",
-                        opt.output.c_str()));
+        throw std::runtime_error(std::format(
+            "file {} already exists; use --force to overwrite", opt.output));
     }
     // generate symmetric key, encrypt it with SM2
     if (!std::filesystem::is_directory(opt.input)) {
         throw std::runtime_error(
-            std::format("input {} is not a directory", opt.input.c_str()));
+            std::format("input {} is not a directory", opt.input));
     }
     auto keyPath = std::move(opt.keyPath)
                        .transform([](auto&& s) {
