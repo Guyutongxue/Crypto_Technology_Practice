@@ -91,11 +91,11 @@ inline void svToPod(std::string_view sv, T& target) {
     std::memcpy(&target, sv.data(), sizeof(T));
 }
 
-#include <iostream>
-template <std::ranges::range R>
-inline void printRange(const R& range) {
-    for (auto&& e : range) {
-        std::cout << std::format("{:02x}", static_cast<unsigned char>(e));
-    }
-    std::cout << std::endl;
-}
+// #include <iostream>
+// template <std::ranges::range R>
+// inline void printRange(const R& range) {
+//     for (auto&& e : range) {
+//         std::cout << std::format("{:02x}", static_cast<unsigned char>(e));
+//     }
+//     std::cout << std::endl;
+// }

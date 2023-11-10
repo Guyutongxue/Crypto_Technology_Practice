@@ -8,7 +8,9 @@
 #include "fs.hpp"
 #include "util.hpp"
 
-inline void keygen(KeygenOption opt) {
+namespace keygen {
+
+inline void entry(KeygenOption opt) {
     SM2_KEY sm2key;
     if (sm2_key_generate(&sm2key) < 0) {
         throw std::runtime_error("failed to generate key");
@@ -23,6 +25,8 @@ inline void keygen(KeygenOption opt) {
 
     writeFile(opt.output + ".pub", pubKeyContent, opt.force);
     writeFile(opt.output, privKeyContent, opt.force);
+}
+
 }
 
 enum class KeyType { Public, Private };

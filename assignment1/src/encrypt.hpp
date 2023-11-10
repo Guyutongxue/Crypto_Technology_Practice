@@ -110,9 +110,7 @@ struct EncryptedFileHeader {
 };
 static_assert(std::is_trivially_copyable_v<EncryptedFileHeader>);
 
-}  // namespace detail
-
-inline void decrypt(EncryptOption opt) {
+inline void doDecrypt(EncryptOption opt) {
     // get SM2 key to decrypt the symmetric key
     SM2_KEY sm2key;
     auto type = readKey(opt.pkey, sm2key);
@@ -132,14 +130,13 @@ inline void decrypt(EncryptOption opt) {
             std::format("input {} is not a directory", opt.input));
     }
     // read symmetric key, decrypt it with SM2
-    auto keyPath = std::move(opt.keyPath)
-                       .transform([](auto&& s) {
-                           return std::filesystem::path{std::move(s)};
-                       })
-                       .value_or(std::filesystem::path{opt.input} /
-                                 detail::DEFAULT_KEY_FILENAME);
+    auto keyPath =
+        std::move(opt.keyPath)
+            .transform(
+                [](auto&& s) { return std::filesystem::path{std::move(s)}; })
+            .value_or(std::filesystem::path{opt.input} / DEFAULT_KEY_FILENAME);
     auto encryptedKey = readFile(keyPath);
-    auto symKeyContent = detail::sm2Decrypt(sm2key, encryptedKey);
+    auto symKeyContent = sm2Decrypt(sm2key, encryptedKey);
     if (!symKeyContent.starts_with("encbox_key{") ||
         !symKeyContent.ends_with("}")) {
         throw std::runtime_error(
@@ -153,8 +150,8 @@ inline void decrypt(EncryptOption opt) {
             "invalid key file (wrong length); maybe .encbox.key file is "
             "corrupted");
     }
-    auto keySpan = detail::Sm4Key{
-        reinterpret_cast<std::uint8_t*>(symKey.data()), symKey.size()};
+    auto keySpan =
+        Sm4Key{reinterpret_cast<std::uint8_t*>(symKey.data()), symKey.size()};
 
     // remove key file temporarily
     std::filesystem::remove(keyPath);
@@ -174,13 +171,12 @@ inline void decrypt(EncryptOption opt) {
         opt.input, opt.output, [&](std::string content, const auto& dest) {
             auto contentView = std::string_view{content};
             // Recreate header from raw bytes
-            if (contentView.size() < sizeof(detail::EncryptedFileHeader)) {
+            if (contentView.size() < sizeof(EncryptedFileHeader)) {
                 throw std::runtime_error(
                     std::format("invalid encrypted file header: too small"));
             }
-            detail::EncryptedFileHeader efh;
-            svToPod(contentView.substr(0, sizeof(detail::EncryptedFileHeader)),
-                    efh);
+            EncryptedFileHeader efh;
+            svToPod(contentView.substr(0, sizeof(EncryptedFileHeader)), efh);
             // extract header info
             if (!efh.checkMagic()) {
                 throw std::runtime_error(
@@ -188,9 +184,8 @@ inline void decrypt(EncryptOption opt) {
                                 "corrupted or not encrypted before"));
             }
             // decrypt with sm4
-            auto cipher =
-                contentView.substr(sizeof(detail::EncryptedFileHeader));
-            auto plain = detail::sm4Decrypt(keySpan, efh.iv, cipher);
+            auto cipher = contentView.substr(sizeof(EncryptedFileHeader));
+            auto plain = sm4Decrypt(keySpan, efh.iv, cipher);
             // verify digest if necessary
             if (efh.ctrl.enableDigest && opt.enableDigest) {
                 std::uint8_t encryptedDigest[SM3_DIGEST_SIZE];
@@ -207,11 +202,7 @@ inline void decrypt(EncryptOption opt) {
     success = true;
 }
 
-inline void encrypt(EncryptOption opt) {
-    if (!opt.encryptSeed) {
-        return decrypt(std::move(opt));
-    }
-
+inline void doEncrypt(EncryptOption opt) {
     // get SM2 key to encrypt the symmetric key
     SM2_KEY sm2key;
     auto type = readKey(opt.pkey, sm2key);
@@ -230,16 +221,15 @@ inline void encrypt(EncryptOption opt) {
         throw std::runtime_error(
             std::format("input {} is not a directory", opt.input));
     }
-    auto keyPath = std::move(opt.keyPath)
-                       .transform([](auto&& s) {
-                           return std::filesystem::path{std::move(s)};
-                       })
-                       .value_or(std::filesystem::path{opt.output} /
-                                 detail::DEFAULT_KEY_FILENAME);
+    auto keyPath =
+        std::move(opt.keyPath)
+            .transform(
+                [](auto&& s) { return std::filesystem::path{std::move(s)}; })
+            .value_or(std::filesystem::path{opt.output} / DEFAULT_KEY_FILENAME);
     auto key = randomIntArray<std::uint8_t, SM4_KEY_SIZE>(*opt.encryptSeed);
     auto symKeyContent =
         std::format("encbox_key{{{}}}", base64Encode(spanToSv(std::span{key})));
-    auto encryptedKey = detail::sm2Encrypt(sm2key, symKeyContent);
+    auto encryptedKey = sm2Encrypt(sm2key, symKeyContent);
     writeFile(keyPath, encryptedKey, opt.force);
 
     // for each entry, encrypt it with SM4
@@ -251,7 +241,7 @@ inline void encrypt(EncryptOption opt) {
                 return;
             }
             // assemble file header
-            detail::EncryptedFileHeader efh;
+            EncryptedFileHeader efh;
             auto iv = randomIntArray<std::uint8_t, 16>();
             std::ranges::copy(iv, efh.iv);
             efh.ctrl.enableDigest = opt.enableDigest;
@@ -261,9 +251,20 @@ inline void encrypt(EncryptOption opt) {
                     content.size(), efh.digest);
             }
             // encrypt with SM4
-            auto cipher = detail::sm4Encrypt(key, iv, content);
+            auto cipher = sm4Encrypt(key, iv, content);
             auto ofs = writeFile(dest, doForceWrite);
             ofs.write(reinterpret_cast<const char*>(&efh), sizeof(efh));
             ofs.write(cipher.data(), cipher.size());
         });
 }
+
+}  // namespace detail
+
+namespace encrypt {
+
+inline void entry(EncryptOption opt) {
+    return (opt.encryptSeed ? detail::doEncrypt
+                            : detail::doDecrypt)(std::move(opt));
+}
+
+}  // namespace encrypt
