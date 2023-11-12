@@ -103,7 +103,7 @@ struct EncryptedFileHeader {
     std::uint8_t magic2[4]{0xba, 0xd1, 0xab, 0xel};
 
     static_assert(sizeof(std::uint8_t) == sizeof(char));
-    bool checkMagic() {
+    bool checkMagic() const {
         return std::memcmp(magic1, "ENCRYPT!", 8) == 0 &&
                std::memcmp(magic2, "\xba\xd1\xab\xel", 4) == 0;
     }
