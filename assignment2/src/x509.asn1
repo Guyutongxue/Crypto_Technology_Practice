@@ -1,0 +1,87 @@
+X509 DEFINITIONS ::= BEGIN
+
+Certificate ::= SEQUENCE {
+     tbsCertificate       TBSCertificate,
+     signatureAlgorithm   AlgorithmIdentifier,
+     signatureValue       BIT STRING
+}
+
+TBSCertificate ::= SEQUENCE {
+     version         [0]  EXPLICIT Version DEFAULT v1,
+     serialNumber         CertificateSerialNumber,
+     signature            AlgorithmIdentifier,
+     issuer               Name,
+     validity             Validity,
+     subject              Name,
+     subjectPublicKeyInfo SubjectPublicKeyInfo,
+     issuerUniqueID  [1]  IMPLICIT UniqueIdentifier OPTIONAL,
+                          -- If present, version shall be v2 or v3
+     subjectUniqueID [2]  IMPLICIT UniqueIdentifier OPTIONAL,
+                          -- If present, version shall be v2 or v3
+     extensions      [3]  EXPLICIT Extensions OPTIONAL
+                          -- If present, version shall be v3
+}
+
+Version ::= INTEGER { v1(0), v2(1), v3(2) }
+
+CertificateSerialNumber ::= INTEGER
+
+Validity ::= SEQUENCE {
+     notBefore      Time,
+     notAfter       Time
+}
+
+Time ::= CHOICE {
+     utcTime        UTCTime,
+     generalTime    GeneralizedTime
+}
+
+Name ::= CHOICE { -- only one possibility for now --
+     rdnSequence  RDNSequence
+}
+
+RDNSequence ::= SEQUENCE OF RelativeDistinguishedName
+
+RelativeDistinguishedName ::= SET SIZE (1..MAX) OF AttributeTypeAndValue
+
+AttributeTypeAndValue ::= SEQUENCE {
+     type     AttributeType,
+     value    AttributeValue
+}
+
+AttributeType ::= OBJECT IDENTIFIER
+
+AttributeValue ::= CHOICE {
+     printableString      PrintableString,
+     utf8String           UTF8String
+}
+
+SubjectPublicKeyInfo ::= SEQUENCE {
+     algorithm            AlgorithmIdentifier,
+     subjectPublicKey     BIT STRING
+}
+
+UniqueIdentifier ::= BIT STRING
+
+Extensions ::= SEQUENCE SIZE (1..MAX) OF Extension
+
+Extension ::= SEQUENCE {
+     extnID      OBJECT IDENTIFIER,
+     critical    BOOLEAN DEFAULT FALSE,
+     extnValue   OCTET STRING
+}
+
+AlgorithmIdentifier ::= SEQUENCE {
+     algorithm   OBJECT IDENTIFIER,
+     parameters  ANY DEFINED BY algorithm OPTIONAL
+}
+
+-- OIDs
+
+sm2-with-sm3 OBJECT IDENTIFIER ::= { 1 2 156 10197 1 501 }
+country-name OBJECT IDENTIFIER ::= { 2 5 4 6 }
+organization-name OBJECT IDENTIFIER ::= { 2 5 4 10 }
+organizational-unit-name OBJECT IDENTIFIER ::= { 2 5 4 11 }
+common-name OBJECT IDENTIFIER ::= { 2 5 4 3 }
+
+END
