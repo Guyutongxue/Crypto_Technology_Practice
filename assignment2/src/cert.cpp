@@ -126,7 +126,7 @@ std::string createCertificate(const CertInfo& subject, const CertInfo& issuer,
     cert.tbsCertificate.issuer = createName(issuer);
     cert.tbsCertificate.subject = createName(subject);
 
-    auto now = time(NULL);
+    auto now = time(nullptr);
     auto oneYearLater = now + ONE_YEAR;
     cert.tbsCertificate.validity.notBefore.present = Time_PR_utcTime;
     asn_time2UT(&cert.tbsCertificate.validity.notBefore.choice.utcTime,
@@ -137,7 +137,7 @@ std::string createCertificate(const CertInfo& subject, const CertInfo& issuer,
 
     auto& pubkey = cert.tbsCertificate.subjectPublicKeyInfo;
     OBJECT_IDENTIFIER_set(&pubkey.algorithm.algorithm, ecPublicKeyOid);
-    OBJECT_IDENTIFIER_t* oid = typedMalloc<OBJECT_IDENTIFIER_t>();
+    auto oid = typedMalloc<OBJECT_IDENTIFIER_t>();
     OBJECT_IDENTIFIER_set(oid, sm2EccOid);
     pubkey.algorithm.parameters =
         ANY_new_fromType(&asn_DEF_OBJECT_IDENTIFIER, oid);
@@ -163,7 +163,6 @@ std::string createCertificate(const CertInfo& subject, const CertInfo& issuer,
         0) {
         throw std::runtime_error("SM2 sign failed");
     }
-    assert(signatureSize <= 72);
     cert.signatureValue.size = signatureSize;
 
     std::string resultStr;

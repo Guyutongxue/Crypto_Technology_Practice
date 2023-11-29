@@ -76,12 +76,4 @@ AlgorithmIdentifier ::= SEQUENCE {
      parameters  ANY DEFINED BY algorithm OPTIONAL
 }
 
--- OIDs
-
-sm2-with-sm3 OBJECT IDENTIFIER ::= { 1 2 156 10197 1 501 }
-country-name OBJECT IDENTIFIER ::= { 2 5 4 6 }
-organization-name OBJECT IDENTIFIER ::= { 2 5 4 10 }
-organizational-unit-name OBJECT IDENTIFIER ::= { 2 5 4 11 }
-common-name OBJECT IDENTIFIER ::= { 2 5 4 3 }
-
 END
