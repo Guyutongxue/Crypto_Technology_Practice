@@ -1,7 +1,7 @@
 
 #include <cstdint>
-#include <iostream>
 #include <format>
+#include <iostream>
 
 #include "handler.hpp"
 #include "httplib.h"
@@ -11,7 +11,14 @@ constexpr const std::string DEFAULT_HOSTNAME = "0.0.0.0";
 
 int main() {
     initDB();
-    auto server = createServer();
-    std::cout << std::format("Listening on {}:{}\n", DEFAULT_HOSTNAME, DEFAULT_PORT);
+    Server server
+#ifdef USE_SSL
+        ("guyutongxue.crt", "guyutongxue.key")
+#endif
+            ;
+    createServer(server);
+
+    std::cout << std::format("Listening on {}:{}\n", DEFAULT_HOSTNAME,
+                             DEFAULT_PORT);
     server.listen(DEFAULT_HOSTNAME, DEFAULT_PORT);
 }

@@ -12,12 +12,7 @@ using Server = httplib::SSLServer;
 using Server = httplib::Server;
 #endif
 
-inline Server createServer() {
-    Server server
-#ifdef USE_SSL
-        ("guyutongxue.crt", "guyutongxue.key")
-#endif
-            ;
+inline void createServer(Server& server) {
     using namespace httplib;
     server.Put("/users/:id", [](const Request& req, Response& res) {
         auto userId = req.path_params.at("id");
