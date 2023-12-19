@@ -13,7 +13,7 @@ int main() {
     initDB();
     Server server
 #ifdef USE_SSL
-        ("guyutongxue.crt", "guyutongxue.key")
+        ("cert.pem", "key.pem")
 #endif
             ;
     createServer(server);
