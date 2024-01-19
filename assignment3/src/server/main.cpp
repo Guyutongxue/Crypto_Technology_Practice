@@ -4,12 +4,11 @@
 #include <iostream>
 
 #include "handler.hpp"
-#include "httplib.h"
 
 constexpr const std::uint16_t DEFAULT_PORT = 8080;
 constexpr const std::string DEFAULT_HOSTNAME = "0.0.0.0";
 
-int main() {
+int main() try {
     initDB();
     Server server
 #ifdef USE_SSL
@@ -20,5 +19,10 @@ int main() {
 
     std::cout << std::format("Listening on {}:{}\n", DEFAULT_HOSTNAME,
                              DEFAULT_PORT);
-    server.listen(DEFAULT_HOSTNAME, DEFAULT_PORT);
+    if (!server.listen(DEFAULT_HOSTNAME, DEFAULT_PORT)) {
+        throw std::runtime_error("failed to listen");
+    }
+} catch (std::exception& e) {
+    std::cerr << e.what() << '\n';
+    return 1;
 }

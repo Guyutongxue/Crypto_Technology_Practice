@@ -4,8 +4,6 @@
 
 #include <string>
 
-#include "SQLiteCpp/Database.h"
-#include "SQLiteCpp/Statement.h"
 #include "sm2.hpp"
 
 constexpr std::string DB_PATH = "test.db";
